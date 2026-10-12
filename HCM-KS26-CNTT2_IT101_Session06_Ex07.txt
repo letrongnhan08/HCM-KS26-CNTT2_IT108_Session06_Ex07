@@ -1,0 +1,28 @@
+Bài 7 : Debug Shell Script xử lý log CRITICAL
+Phần 1: Phân tích lỗi
+(trace code)
+[ "=== Bat dau quet log: [Ngày Giờ] ===" vào daily_critical.txt ]
+[ Select-String -Path server.log -Pattern "critical" -CaseSensitive ]
+[ "=== Hoan tat. So dong loi: ===" vào daily_critical.txt ]
+[ "(Get-Content daily_critical.txt).Count" hiện ra 2 dòng tiêu đề và dòng đếm số dòng = 2]
+Phần 2: Sửa lỗi và kiểm thử
+Đoạn script đã sửa:
+
+# Script: deploy_checker.ps1
+# Mục đích: Trích xuất lỗi CRITICAL từ server.log vào daily_critical.txt
+
+"=== Bat dau quet log: $(Get-Date) ===" | Out-File daily_critical.txt
+Select-String -Path server.log -Pattern "CRITICAL" | Out-File -Append daily_critical.txt
+"=== Hoan tat. So dong loi: ===" | Out-File -Append daily_critical.txt
+(Get-Content daily_critical.txt).Count | Out-File -Append daily_critical.txt
+
+Kết quả mong đợi của file daily_critical.txt:
+
+=== Bat dau quet log: 09/18/2026 04:00:00 ===
+server.log:2:2026-09-18 02:30:11 CRITICAL Database connection pool exhausted
+server.log:3:2026-09-18 02:30:45 CRITICAL Retry limit exceeded for payment-service
+=== Hoan tat. So dong loi: ===
+4
+
+Trường hợp file server.log không tồn tại:
+- Script sẽ báo lỗi khi PowerShell  báo lỗi ItemNotFoundException ở lệnh Select-String vì không tìm thấy đường dẫn file
